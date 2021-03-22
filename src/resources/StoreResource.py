@@ -47,6 +47,6 @@ class Store(Resource):
 class StoreList(Resource):
     def get(self):
         try:
-            return {'stores': list(map(lambda x: x.json(), StoreModel.query.all()))}
+            return {'stores': list(map(lambda x: x.json(), StoreModel.find_all()))}
         except Exception:
             return {'Erro': Exception}

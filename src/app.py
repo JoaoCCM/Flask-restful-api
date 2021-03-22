@@ -4,9 +4,9 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
 
-from resources.User import UserRegister
-from resources.Item import Item, ItemList
-from resources.Store import Store, StoreList
+from resources.UserResource import UserRegister
+from resources.ItemResource import Item, ItemList
+from resources.StoreResource import Store, StoreList
 from resources.AuthResource import Login
 
 load_dotenv()
@@ -14,14 +14,15 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['SECRET_KEY'] = os.getenv('JWT_SECRET')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
 api = Api(app)
 
 @app.before_first_request
 def create_tables():
     db.create_all()
 
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET')
 jwt = JWTManager(app)
 
 api.add_resource(Item, '/item')
