@@ -1,7 +1,10 @@
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required)
+from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, get_jwt)
 from models.Auth import AuthModel
 from models.User import UserModel
+from datetime import datetime
+from datetime import timedelta
+from datetime import timezone
 
 parser = reqparse.RequestParser()
 parser.add_argument('username', type=str, required=True, help="This field cannot be blank.")
@@ -27,3 +30,21 @@ class Login(Resource):
 
         except Exception as err:
             return {'Error': repr(err)}, 500
+
+
+class RefreshToken(Resource):
+    @jwt_required()
+    def post(self):
+        try:
+            exp_timestamp = get_jwt()["exp"]
+            now = datetime.now(timezone.utc)
+            current_user = get_jwt()
+            target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+
+            if target_timestamp > exp_timestamp:
+                access_token = create_access_token(identity=current_user, fresh=False)
+                return {'access_token': access_token}
+
+            return
+        except Exception:
+            return {'message': Exception}, 500

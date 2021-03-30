@@ -1,7 +1,6 @@
 from flask_restful import Resource, reqparse, request
-from flask_jwt import jwt_required
 from models.Item import ItemModel
-
+from flask_jwt_extended import get_jwt, jwt_required
 
 class Item(Resource):
     parser = reqparse.RequestParser()
@@ -25,12 +24,18 @@ class Item(Resource):
     def get(self):
         name = request.args.get('name')        
         item = ItemModel.find_by_name(name)
+        
         if item:
             return item.json()
         return {'message': 'Item not found'}, 404
 
     @jwt_required()
     def post(self):
+        claims = get_jwt()
+
+        if not claims['admin']:
+            return {'message': 'You need admin privileges'}, 401
+
         data = Item.parser.parse_args()
         if ItemModel.find_by_name(data['name']):
             return {'message': "An item with name '{}' already exists.".format(name)}, 400
